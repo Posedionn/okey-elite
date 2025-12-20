@@ -3,145 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>101 Okey Plus Style - Elite</title>
+    <title>101 Okey Elite Pro</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
         :root {
-            --plus-green: #0a400a;
-            --plus-dark: #052205;
-            --tile-bone: #fefae0;
+            --plus-bg: #073307;
+            --plus-border: #ffd700;
+            --tile-bg: #fdfaf1;
         }
-        
         body { 
-            background: radial-gradient(circle, var(--plus-green) 0%, var(--plus-dark) 100%); 
-            color: white; font-family: 'Arial', sans-serif; 
+            background: radial-gradient(circle, #0a4d0a 0%, #041a04 100%); 
+            color: white; font-family: 'Helvetica', sans-serif; 
             margin: 0; overflow: hidden; touch-action: none;
         }
 
-        /* 101 Okey Plus Tarzı Masa Düzeni */
-        .game-table {
-            height: 50vh; position: relative;
-            background: url('https://www.transparenttextures.com/patterns/dark-leather.png'); /* Deri Dokusu */
+        /* Üst Panel & Sayaç */
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 8px 15px; background: rgba(0,0,0,0.8);
+            border-bottom: 2px solid var(--plus-border);
+        }
+        .timer-circle {
+            width: 40px; height: 40px; border: 3px solid #ffeb3b;
+            border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; font-weight: bold; font-size: 18px;
         }
 
-        /* Oyuncu Kutuları (Profil Resimli Gibi) */
-        .player-box {
-            position: absolute; width: 60px; height: 80px;
-            background: rgba(0,0,0,0.6); border: 2px solid #ffd700;
-            border-radius: 8px; text-align: center; font-size: 10px;
-        }
-        .p-top { top: 10px; left: 50%; transform: translateX(-50%); }
-        .p-left { top: 50%; left: 10px; transform: translateY(-50%); }
-        .p-right { top: 50%; right: 10px; transform: translateY(-50%); }
-
-        /* Ortadaki Okey ve Deste Alanı */
-        .center-deck {
-            position: absolute; top: 50%; left: 50%; 
-            transform: translate(-50%, -50%); display: flex; gap: 15px;
+        /* Oyun Masası Yerleşimi */
+        .table {
+            height: 45vh; position: relative;
+            background: url('https://www.transparenttextures.com/patterns/dark-leather.png');
         }
 
-        /* Plus Tarzı Taşlar */
+        /* Plus Tarzı Oyuncu Kutuları */
+        .player {
+            position: absolute; width: 55px; height: 75px;
+            background: rgba(0,0,0,0.7); border: 1.5px solid #888;
+            border-radius: 10px; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; font-size: 10px;
+        }
+        .p-top { top: 10px; left: 50%; transform: translateX(-50%); border-color: #ffeb3b; }
+        .p-left { top: 40%; left: 10px; transform: translateY(-50%); }
+        .p-right { top: 40%; right: 10px; transform: translateY(-50%); }
+        .avatar { width: 35px; height: 35px; background: #444; border-radius: 50%; margin-bottom: 5px; }
+
+        /* Ortadaki Taşlar */
+        .deck-center {
+            position: absolute; top: 45%; left: 50%;
+            transform: translate(-50%, -50%); display: flex; gap: 20px;
+        }
+
+        /* 3D Taş Tasarımı */
         .tile {
-            width: 32px; height: 46px; background: var(--tile-bone);
+            width: 32px; height: 46px; background: var(--tile-bg);
             border-radius: 4px; display: flex; flex-direction: column;
             align-items: center; justify-content: center;
             font-weight: bold; font-size: 17px; color: #333;
-            box-shadow: 0 4px 0 #bcbab0, 2px 4px 8px rgba(0,0,0,0.5);
-            position: relative;
+            box-shadow: 0 4px 0 #bcbab0, 2px 5px 10px rgba(0,0,0,0.6);
+            cursor: grab;
         }
-        .tile.red { color: #cc0000; } .tile.blue { color: #0000cc; }
-        .tile.black { color: #000000; } .tile.orange { color: #ff8000; }
-        .tile::after { content: '●'; font-size: 8px; margin-top: -4px; opacity: 0.4; }
+        .tile.red { color: #d32f2f; } .tile.blue { color: #1976d2; }
+        .tile.black { color: #000; } .tile.orange { color: #f57c00; }
+        .tile::after { content: '●'; font-size: 8px; margin-top: -5px; opacity: 0.3; }
 
-        /* Çift Sıra Profesyonel Istaka */
-        .rack-system {
-            position: fixed; bottom: 70px; width: 100%;
-            background: linear-gradient(to bottom, #4e342e, #2d1b15);
-            padding: 10px 0; border-top: 4px solid #1a0f0a;
-            box-shadow: 0 -10px 30px rgba(0,0,0,0.8);
+        /* Istaka Alanı (Çift Sıra) */
+        .rack-zone {
+            position: fixed; bottom: 65px; width: 100%;
+            background: linear-gradient(to bottom, #422d21, #261710);
+            padding: 12px 0; border-top: 5px solid #1a100a;
         }
-        .rack-row {
-            display: flex; justify-content: center; gap: 4px;
-            height: 52px; margin-bottom: 3px; min-height: 52px;
-        }
+        .row { display: flex; justify-content: center; gap: 4px; height: 50px; margin-bottom: 4px; min-height: 50px; }
 
-        /* Alt Panel Butonları */
-        .action-bar {
-            position: fixed; bottom: 0; width: 100%; height: 70px;
+        /* Kontrol Paneli */
+        .footer {
+            position: fixed; bottom: 0; width: 100%; height: 65px;
             display: grid; grid-template-columns: repeat(5, 1fr);
-            background: #000; padding: 5px; gap: 4px; box-sizing: border-box;
+            background: #000; padding: 5px; gap: 3px;
         }
-        .action-btn {
-            border: 1px solid #444; border-radius: 5px;
-            background: linear-gradient(to bottom, #333, #000);
-            color: #ffd700; font-weight: bold; font-size: 10px;
+        .btn {
+            border: none; border-radius: 6px; font-weight: bold;
+            font-size: 9px; color: #ffd700; background: #222;
+            text-transform: uppercase;
         }
-
-        /* Sayaç ve Skor */
-        .info-panel {
-            position: absolute; top: 10px; right: 10px; 
-            background: rgba(0,0,0,0.7); padding: 5px 10px; border-radius: 5px; font-size: 12px;
-        }
+        .btn-active { background: linear-gradient(#4caf50, #1b5e20); color: white; }
     </style>
 </head>
 <body>
 
-    <div class="game-table" id="table-area">
-        <div class="info-panel">
-            Süre: <span id="timer" style="color:#ffeb3b">45</span><br>
-            Puan: <span id="puan" style="color:#4caf50">0</span>
-        </div>
-
-        <div class="player-box p-top">🤖 Bot 1</div>
-        <div class="player-box p-left">🤖 Bot 2</div>
-        <div class="player-box p-right">🤖 Bot 3</div>
-
-        <div class="center-deck">
-            <div class="tile" style="background:#1a1a1a; color:white; border:1px solid #444;" onclick="tasCek()">🎴</div>
-            <div class="tile"><span style="font-size:8px; color:#888;">OKEY</span>13</div>
+    <div class="header">
+        <div class="timer-circle" id="timer">45</div>
+        <div style="text-align: right;">
+            <span style="font-size: 10px; color: #aaa;">TOPLAM PUAN</span><br>
+            <span id="score" style="font-size: 20px; font-weight: bold; color: #4caf50;">0</span>
         </div>
     </div>
 
-    <div class="rack-system">
-        <div class="rack-row" id="row1"></div>
-        <div class="rack-row" id="row2"></div>
+    <div class="table" id="drop-area">
+        <div class="player p-top"><div class="avatar"></div>Bot 1</div>
+        <div class="player p-left"><div class="avatar"></div>Bot 2</div>
+        <div class="player p-right"><div class="avatar"></div>Bot 3</div>
+
+        <div class="deck-center">
+            <div class="tile" style="background:#222; color:white; border:1px solid #444;" onclick="tasCek()">🎴</div>
+            <div class="tile"><span style="font-size:7px; color:#999;">OKEY</span>11</div>
+        </div>
     </div>
 
-    <div class="action-bar">
-        <button class="action-btn" onclick="dagit()">DAĞIT</button>
-        <button class="action-btn" style="color:#2ecc71" onclick="alert('Seri Açıldı')">SERİ AÇ</button>
-        <button class="action-btn" style="color:#3498db" onclick="alert('Çift Açıldı')">ÇİFT AÇ</button>
-        <button class="action-btn" onclick="autoSort()">DİZ</button>
-        <button class="action-btn" style="color:#e74c3c" onclick="location.reload()">ÇIK</button>
+    <div class="rack-zone">
+        <div class="row" id="r1"></div>
+        <div class="row" id="r2"></div>
+    </div>
+
+    <div class="footer">
+        <button class="btn btn-active" onclick="dagit()">DAĞIT</button>
+        <button class="btn" onclick="alert('Seri kontrol ediliyor...')">SERİ AÇ</button>
+        <button class="btn" onclick="alert('Çift kontrol ediliyor...')">ÇİFT AÇ</button>
+        <button class="btn" onclick="autoSort()">DİZ</button>
+        <button class="btn" style="color:#f44336" onclick="location.reload()">YENİ</button>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.ready(); tg.expand();
-
+        
         const colors = ['red', 'blue', 'black', 'orange'];
         
         function dagit() {
-            const r1 = document.getElementById('row1');
-            const r2 = document.getElementById('row2');
+            const r1 = document.getElementById('r1'); const r2 = document.getElementById('r2');
             r1.innerHTML = ''; r2.innerHTML = '';
             for(let i=0; i<22; i++) {
-                const n = Math.floor(Math.random() * 13) + 1;
-                const c = colors[Math.floor(Math.random() * 4)];
+                const n = Math.floor(Math.random()*13)+1;
+                const c = colors[Math.floor(Math.random()*4)];
                 const t = `<div class="tile ${c}" data-val="${n}">${n}</div>`;
-                if(i < 11) r1.innerHTML += t; else r2.innerHTML += t;
+                if(i<11) r1.innerHTML += t; else r2.innerHTML += t;
             }
-            tg.HapticFeedback.impactOccurred('medium');
+            tg.HapticFeedback.impactOccurred('heavy');
         }
 
-        // Sürükle Bırak - SortableJS
-        [document.getElementById('row1'), document.getElementById('row2'), document.getElementById('table-area')].forEach(el => {
-            new Sortable(el, { group: 'plus-okey', animation: 150 });
+        [document.getElementById('r1'), document.getElementById('r2'), document.getElementById('drop-area')].forEach(el => {
+            new Sortable(el, { group: 'plus', animation: 150, ghostClass: 'tile-ghost' });
         });
 
-        let time = 45;
-        setInterval(() => { if(time > 0) { time--; document.getElementById('timer').innerText = time; } }, 1000);
+        let timeLeft = 45;
+        setInterval(() => {
+            if(timeLeft > 0) {
+                timeLeft--;
+                document.getElementById('timer').innerText = timeLeft;
+                if(timeLeft <= 10) document.getElementById('timer').style.color = 'red';
+            }
+        }, 1000);
 
         window.onload = dagit;
     </script>
