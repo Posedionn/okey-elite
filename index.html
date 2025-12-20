@@ -3,75 +3,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>101 Okey Elite v21</title>
+    <title>Elite 101 Okey - Pro</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
-        body { background-color: #006400; color: white; font-family: sans-serif; margin: 0; overflow: hidden; text-align: center; }
-        .header { background: rgba(0,0,0,0.5); padding: 10px; font-weight: bold; font-size: 14px; }
-        .game-area { height: 70vh; position: relative; border: 5px solid #5d4037; margin: 10px; border-radius: 15px; box-shadow: inset 0 0 50px #000; }
-        .rack { background: #3e2723; height: 100px; position: fixed; bottom: 60px; left: 0; right: 0; display: flex; align-items: center; justify-content: center; gap: 5px; padding: 5px; border-top: 3px solid #795548; }
-        .tile { width: 30px; height: 45px; background: #fffde7; color: #000; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px; box-shadow: 2px 2px 5px rgba(0,0,0,0.5); cursor: pointer; }
-        .tile.red { color: #d32f2f; } .tile.blue { color: #1976d2; } .tile.black { color: #212121; } .tile.orange { color: #f57c00; }
-        .controls { position: fixed; bottom: 5px; width: 100%; display: flex; justify-content: space-around; }
-        button { padding: 10px; border-radius: 8px; border: none; font-weight: bold; color: white; cursor: pointer; flex: 1; margin: 0 5px; }
-        .btn-distribute { background: #fbc02d; color: black; }
-        .btn-seri { background: #2e7d32; }
-        .btn-cift { background: #1565c0; }
-        .btn-new { background: #c62828; }
-        #score-board { position: absolute; top: 20px; right: 20px; background: rgba(0,0,0,0.7); padding: 10px; border-radius: 5px; }
+        :root { --board: #074e12; --tile: #fffde7; --rack-bg: #4a2c2a; }
+        body { background: var(--board); color: white; font-family: sans-serif; margin: 0; overflow: hidden; }
+        
+        /* 4 Kişilik Masa Düzeni */
+        .player-label { position: absolute; background: rgba(0,0,0,0.5); padding: 5px 10px; border-radius: 10px; font-size: 12px; }
+        #p-top { top: 10px; left: 50%; transform: translateX(-50%); }
+        #p-left { top: 50%; left: 10px; transform: translateY(-50%) rotate(90deg); }
+        #p-right { top: 50%; right: 10px; transform: translateY(-50%) rotate(-90deg); }
+        #p-me { bottom: 180px; left: 50%; transform: translateX(-50%); color: #ffd700; font-weight: bold; }
+
+        /* Oyun Alanı ve Taş Bırakma Yerleri */
+        .center-area { position: absolute; top: 20%; left: 15%; width: 70%; height: 40%; border: 2px dashed rgba(255,255,255,0.2); border-radius: 20px; display: flex; align-items: center; justify-content: center; }
+        .open-area { width: 50%; height: 80%; border-right: 1px solid rgba(255,255,255,0.3); padding: 5px; overflow-y: auto; }
+        .pair-area { width: 50%; height: 80%; padding: 5px; overflow-y: auto; }
+
+        /* Ortadaki Okey ve Taş Çekme Paneli */
+        .deck-area { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; gap: 10px; }
+        .draw-pile { width: 40px; height: 55px; background: #333; border: 2px solid #ccc; border-radius: 5px; text-align: center; line-height: 55px; cursor: pointer; }
+        .okey-tile { width: 40px; height: 55px; background: var(--tile); color: #000; border-radius: 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; }
+
+        /* Çift Sıra Istaka */
+        .rack-wrapper { position: fixed; bottom: 65px; left: 0; right: 0; background: var(--rack-bg); padding: 10px 5px; border-top: 5px solid #3e2723; }
+        .rack-row { display: flex; justify-content: center; gap: 4px; height: 52px; margin-bottom: 4px; min-height: 52px; }
+
+        /* Taş Tasarımı */
+        .tile { width: 32px; height: 48px; background: var(--tile); border-radius: 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; color: #333; box-shadow: 1px 2px 3px #000; cursor: grab; }
+        .black { color: #000; } .red { color: #d32f2f; } .blue { color: #1976d2; } .orange { color: #ef6c00; }
+
+        /* İstatistik ve Kontrol Paneli */
+        .stats { position: fixed; top: 10px; right: 10px; background: rgba(0,0,0,0.7); padding: 10px; border-radius: 5px; font-size: 12px; }
+        .timer { position: fixed; top: 10px; left: 10px; font-size: 20px; color: #ffeb3b; }
+        .controls { position: fixed; bottom: 0; width: 100%; height: 60px; display: flex; gap: 2px; background: #111; padding: 5px; box-sizing: border-box; }
+        button { flex: 1; border: none; border-radius: 5px; font-weight: bold; color: white; cursor: pointer; font-size: 10px; }
     </style>
 </head>
 <body>
-    <div class="header">EDİP HABER AJANSI - 101 OKEY ELITE PRO</div>
-    
-    <div id="score-board">Puan: <span id="puan">0</span></div>
 
-    <div class="game-area" id="table">
-        </div>
+    <div class="timer" id="timer">45</div>
+    <div class="stats">
+        Seri Toplam: <span id="seri-sum">0</span><br>
+        Çift Sayısı: <span id="pair-count">0</span>
+    </div>
 
-    <div class="rack" id="my-rack">
-        </div>
+    <div class="player-label" id="p-top">Bilgisayar 1</div>
+    <div class="player-label" id="p-left">Bilgisayar 2</div>
+    <div class="player-label" id="p-right">Bilgisayar 3</div>
+    <div class="player-label" id="p-me">SİZ</div>
+
+    <div class="center-area">
+        <div class="open-area" id="my-open-area">Düz Açılan</div>
+        <div class="pair-area" id="my-pair-area">Çift Açılan</div>
+    </div>
+
+    <div class="deck-area">
+        <div class="draw-pile" onclick="tasCek()">🎴</div>
+        <div class="okey-tile"><span style="font-size: 10px">OKEY</span><span id="indicator">5</span></div>
+    </div>
+
+    <div class="rack-wrapper">
+        <div class="rack-row" id="rack-1"></div>
+        <div class="rack-row" id="rack-2"></div>
+    </div>
 
     <div class="controls">
-        <button class="btn-distribute" onclick="dagit()">TAŞ DAĞIT</button>
-        <button class="btn-seri" onclick="seriAc()">SERİ AÇ</button>
-        <button class="btn-cift" onclick="ciftAc()">ÇİFT AÇ</button>
-        <button class="btn-new" onclick="location.reload()">YENİ EL</button>
+        <button style="background: #e67e22;" onclick="dagit()">DAĞIT</button>
+        <button style="background: #27ae60;" onclick="seriAc()">SERİ AÇ</button>
+        <button style="background: #2980b9;" onclick="ciftAc()">ÇİFT AÇ</button>
+        <button style="background: #8e44ad;" onclick="seriDiz()">SERİ DİZ</button>
+        <button style="background: #c0392b;" onclick="location.reload()">YENİ EL</button>
     </div>
 
     <script>
-        const colors = ['red', 'blue', 'black', 'orange'];
-        let score = 0;
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+        document.getElementById('p-me').innerText = tg.initDataUnsafe.user?.first_name.toUpperCase() || "SİZ";
+
+        const colors = ['black', 'blue', 'red', 'orange'];
+        let timeLeft = 45;
+
+        // Sürükle Bırak Özelliği
+        [document.getElementById('rack-1'), document.getElementById('rack-2'), document.getElementById('my-open-area'), document.getElementById('my-pair-area')].forEach(el => {
+            new Sortable(el, { group: 'shared', animation: 150, onEnd: updateStats });
+        });
 
         function dagit() {
-            const rack = document.getElementById('my-rack');
-            rack.innerHTML = '';
-            for(let i=0; i<21; i++) {
-                const num = Math.floor(Math.random() * 13) + 1;
-                const color = colors[Math.floor(Math.random() * 4)];
-                const tile = document.createElement('div');
-                tile.className = `tile ${color}`;
-                tile.innerText = num;
-                rack.appendChild(tile);
+            const r1 = document.getElementById('rack-1');
+            const r2 = document.getElementById('rack-2');
+            r1.innerHTML = ''; r2.innerHTML = '';
+            for(let i=0; i<22; i++) {
+                const n = Math.floor(Math.random() * 13) + 1;
+                const c = colors[Math.floor(Math.random() * 4)];
+                const t = `<div class="tile ${c}" data-val="${n}">${n}</div>`;
+                if(i < 11) r1.innerHTML += t; else r2.innerHTML += t;
             }
-            Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+            updateStats();
         }
 
-        function seriAc() {
-            score += 101; 
-            document.getElementById('puan').innerText = score;
-            alert("Seri perler masaya dizildi! Toplam Puan: " + score);
-            Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+        function updateStats() {
+            let sum = 0;
+            document.querySelectorAll('#my-open-area .tile').forEach(t => sum += parseInt(t.dataset.val));
+            document.getElementById('seri-sum').innerText = sum;
+            document.getElementById('pair-count').innerText = document.querySelectorAll('#my-pair-area .tile').length / 2;
         }
 
-        function ciftAc() {
-            alert("Çift açıldı! Çift hanesine kaydedildi.");
+        function tasCek() {
+            const t = `<div class="tile blue" data-val="7">7</div>`;
+            document.getElementById('rack-1').innerHTML += t;
+            tg.HapticFeedback.impactOccurred('light');
         }
 
-        window.onload = () => {
-            Telegram.WebApp.ready();
-            Telegram.WebApp.expand();
-        };
+        // Timer
+        setInterval(() => {
+            if(timeLeft > 0) {
+                timeLeft--;
+                document.getElementById('timer').innerText = timeLeft;
+            } else {
+                tg.showAlert("Süreniz doldu! Taş otomatik atılıyor.");
+                timeLeft = 45;
+            }
+        }, 1000);
+
+        window.onload = dagit;
     </script>
 </body>
 </html>
