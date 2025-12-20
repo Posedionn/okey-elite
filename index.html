@@ -3,156 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>101 Okey Elite Pro</title>
+    <title>101 Okey Plus Elite - Grid System</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
         :root {
-            --plus-bg: #073307;
-            --plus-border: #ffd700;
+            --plus-gold: #ffd700;
             --tile-bg: #fdfaf1;
+            --grid-color: rgba(255, 255, 255, 0.15);
         }
         body { 
-            background: radial-gradient(circle, #0a4d0a 0%, #041a04 100%); 
-            color: white; font-family: 'Helvetica', sans-serif; 
-            margin: 0; overflow: hidden; touch-action: none;
+            background: #062a06 url('https://www.transparenttextures.com/patterns/dark-leather.png'); 
+            color: white; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden;
         }
 
-        /* Üst Panel & Sayaç */
-        .header {
+        /* Üst Bar */
+        .top-nav {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 8px 15px; background: rgba(0,0,0,0.8);
-            border-bottom: 2px solid var(--plus-border);
-        }
-        .timer-circle {
-            width: 40px; height: 40px; border: 3px solid #ffeb3b;
-            border-radius: 50%; display: flex; align-items: center;
-            justify-content: center; font-weight: bold; font-size: 18px;
+            padding: 5px 15px; background: rgba(0,0,0,0.8); border-bottom: 2px solid var(--plus-gold);
         }
 
-        /* Oyun Masası Yerleşimi */
-        .table {
-            height: 45vh; position: relative;
-            background: url('https://www.transparenttextures.com/patterns/dark-leather.png');
+        /* OYUN ALANI VE IZGARA (GRID) */
+        .game-area {
+            height: 55vh; position: relative; overflow: hidden;
+        }
+        
+        /* 101 Plus Tarzı Izgara Sistemi */
+        .grid-layer {
+            position: absolute; top: 10%; left: 5%; width: 90%; height: 60%;
+            display: grid; grid-template-columns: repeat(20, 1fr); grid-template-rows: repeat(8, 1fr);
+            border: 1px solid var(--grid-color);
+            background-image: 
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 5% 12.5%; /* Izgara boyutları */
         }
 
-        /* Plus Tarzı Oyuncu Kutuları */
-        .player {
-            position: absolute; width: 55px; height: 75px;
-            background: rgba(0,0,0,0.7); border: 1.5px solid #888;
-            border-radius: 10px; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; font-size: 10px;
-        }
-        .p-top { top: 10px; left: 50%; transform: translateX(-50%); border-color: #ffeb3b; }
-        .p-left { top: 40%; left: 10px; transform: translateY(-50%); }
-        .p-right { top: 40%; right: 10px; transform: translateY(-50%); }
-        .avatar { width: 35px; height: 35px; background: #444; border-radius: 50%; margin-bottom: 5px; }
-
-        /* Ortadaki Taşlar */
-        .deck-center {
-            position: absolute; top: 45%; left: 50%;
-            transform: translate(-50%, -50%); display: flex; gap: 20px;
+        /* Taş Açma Alanları (Kırmızı Çizgiyle Ayrılmış) */
+        .drop-zone {
+            position: absolute; top: 10%; left: 5%; width: 90%; height: 60%;
+            display: flex; flex-wrap: wrap; align-content: flex-start; gap: 2px;
+            z-index: 5;
         }
 
-        /* 3D Taş Tasarımı */
+        /* Oyuncu Profilleri */
+        .user-card {
+            position: absolute; width: 70px; text-align: center; font-size: 11px;
+            background: rgba(0,0,0,0.6); border-radius: 8px; padding: 5px; border: 1px solid #555;
+        }
+        .u-top { top: 5px; left: 50%; transform: translateX(-50%); }
+        .u-left { top: 30%; left: 5px; }
+        .u-right { top: 30%; right: 5px; }
+
+        /* Plus Tarzı Taşlar */
         .tile {
             width: 32px; height: 46px; background: var(--tile-bg);
-            border-radius: 4px; display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            font-weight: bold; font-size: 17px; color: #333;
-            box-shadow: 0 4px 0 #bcbab0, 2px 5px 10px rgba(0,0,0,0.6);
-            cursor: grab;
+            border-radius: 4px; display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 18px; color: #333;
+            box-shadow: 0 4px 0 #bcbab0, 2px 4px 6px rgba(0,0,0,0.4);
         }
-        .tile.red { color: #d32f2f; } .tile.blue { color: #1976d2; }
-        .tile.black { color: #000; } .tile.orange { color: #f57c00; }
-        .tile::after { content: '●'; font-size: 8px; margin-top: -5px; opacity: 0.3; }
+        .red { color: #d32f2f; } .blue { color: #1976d2; } .black { color: #111; } .orange { color: #ff8c00; }
 
-        /* Istaka Alanı (Çift Sıra) */
-        .rack-zone {
-            position: fixed; bottom: 65px; width: 100%;
-            background: linear-gradient(to bottom, #422d21, #261710);
-            padding: 12px 0; border-top: 5px solid #1a100a;
+        /* Istaka ve Akıllı Butonlar */
+        .rack-wrapper {
+            position: fixed; bottom: 70px; width: 100%; height: 110px;
+            background: linear-gradient(to bottom, #4e342e, #2a1b15);
+            border-top: 4px solid #1a100a; display: flex; flex-direction: column; justify-content: center;
         }
-        .row { display: flex; justify-content: center; gap: 4px; height: 50px; margin-bottom: 4px; min-height: 50px; }
+        .rack-row { display: flex; justify-content: center; gap: 4px; height: 48px; margin-bottom: 2px; }
 
-        /* Kontrol Paneli */
-        .footer {
-            position: fixed; bottom: 0; width: 100%; height: 65px;
-            display: grid; grid-template-columns: repeat(5, 1fr);
-            background: #000; padding: 5px; gap: 3px;
+        /* Buton Paneli */
+        .footer-btns {
+            position: fixed; bottom: 0; width: 100%; height: 70px;
+            display: flex; justify-content: space-around; align-items: center;
+            background: #000; padding: 5px; border-top: 2px solid #333;
         }
-        .btn {
-            border: none; border-radius: 6px; font-weight: bold;
-            font-size: 9px; color: #ffd700; background: #222;
-            text-transform: uppercase;
+        .btn-plus {
+            flex: 1; margin: 0 3px; height: 50px; border: none; border-radius: 6px;
+            background: #222; color: var(--plus-gold); font-weight: bold; font-size: 11px;
         }
-        .btn-active { background: linear-gradient(#4caf50, #1b5e20); color: white; }
+        .btn-side { width: 50px; background: #333; color: white; font-size: 10px; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <div class="timer-circle" id="timer">45</div>
-        <div style="text-align: right;">
-            <span style="font-size: 10px; color: #aaa;">TOPLAM PUAN</span><br>
-            <span id="score" style="font-size: 20px; font-weight: bold; color: #4caf50;">0</span>
+    <div class="top-nav">
+        <div id="timer" style="font-size: 20px; color: #ffeb3b; font-weight: bold;">45</div>
+        <div style="font-size: 12px;">Puan: <span id="score" style="color:#4caf50">0</span></div>
+    </div>
+
+    <div class="game-area">
+        <div class="grid-layer"></div> <div class="drop-zone" id="table-drop"></div> <div class="user-card u-top">🤖 Bilgisayar 1</div>
+        <div class="user-card u-left">🤖 Bilgisayar 2</div>
+        <div class="user-card u-right">🤖 Bilgisayar 3</div>
+
+        <div style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); display:flex; gap:15px; z-index: 10;">
+            <div class="tile" style="background:#111; color:white; border:1px solid #444;">🎴</div>
+            <div class="tile">11</div>
         </div>
     </div>
 
-    <div class="table" id="drop-area">
-        <div class="player p-top"><div class="avatar"></div>Bot 1</div>
-        <div class="player p-left"><div class="avatar"></div>Bot 2</div>
-        <div class="player p-right"><div class="avatar"></div>Bot 3</div>
-
-        <div class="deck-center">
-            <div class="tile" style="background:#222; color:white; border:1px solid #444;" onclick="tasCek()">🎴</div>
-            <div class="tile"><span style="font-size:7px; color:#999;">OKEY</span>11</div>
-        </div>
+    <div class="rack-wrapper">
+        <div class="rack-row" id="r1"></div>
+        <div class="rack-row" id="r2"></div>
     </div>
 
-    <div class="rack-zone">
-        <div class="row" id="r1"></div>
-        <div class="row" id="r2"></div>
-    </div>
-
-    <div class="footer">
-        <button class="btn btn-active" onclick="dagit()">DAĞIT</button>
-        <button class="btn" onclick="alert('Seri kontrol ediliyor...')">SERİ AÇ</button>
-        <button class="btn" onclick="alert('Çift kontrol ediliyor...')">ÇİFT AÇ</button>
-        <button class="btn" onclick="autoSort()">DİZ</button>
-        <button class="btn" style="color:#f44336" onclick="location.reload()">YENİ</button>
+    <div class="footer-btns">
+        <button class="btn-plus btn-side" onclick="akilliDiz('cift')">ÇİFT<br>DİZ</button>
+        <button class="btn-plus" style="background: #2e7d32; color: white;" onclick="dagit()">DAĞIT</button>
+        <button class="btn-plus" style="background: #1565c0; color: white;" onclick="seriAc()">AÇ</button>
+        <button class="btn-plus btn-side" onclick="akilliDiz('seri')">SERİ<br>DİZ</button>
     </div>
 
     <script>
-        const tg = window.Telegram.WebApp;
-        tg.ready(); tg.expand();
-        
+        const tg = window.Telegram.WebApp; tg.expand();
         const colors = ['red', 'blue', 'black', 'orange'];
-        
+        let deck = [];
+
         function dagit() {
             const r1 = document.getElementById('r1'); const r2 = document.getElementById('r2');
-            r1.innerHTML = ''; r2.innerHTML = '';
+            r1.innerHTML = ''; r2.innerHTML = ''; deck = [];
             for(let i=0; i<22; i++) {
-                const n = Math.floor(Math.random()*13)+1;
-                const c = colors[Math.floor(Math.random()*4)];
-                const t = `<div class="tile ${c}" data-val="${n}">${n}</div>`;
-                if(i<11) r1.innerHTML += t; else r2.innerHTML += t;
+                const t = { n: Math.floor(Math.random()*13)+1, c: colors[Math.floor(Math.random()*4)] };
+                deck.push(t);
+                const html = `<div class="tile ${t.c}" data-n="${t.n}">${t.n}</div>`;
+                if(i<11) r1.innerHTML += html; else r2.innerHTML += html;
             }
-            tg.HapticFeedback.impactOccurred('heavy');
         }
 
-        [document.getElementById('r1'), document.getElementById('r2'), document.getElementById('drop-area')].forEach(el => {
-            new Sortable(el, { group: 'plus', animation: 150, ghostClass: 'tile-ghost' });
-        });
+        function akilliDiz(mod) {
+            const r1 = document.getElementById('r1'); const r2 = document.getElementById('r2');
+            r1.innerHTML = ''; r2.innerHTML = '';
+            
+            if(mod === 'seri') deck.sort((a,b) => a.n - b.n);
+            else deck.sort((a,b) => a.c.localeCompare(b.c));
 
-        let timeLeft = 45;
-        setInterval(() => {
-            if(timeLeft > 0) {
-                timeLeft--;
-                document.getElementById('timer').innerText = timeLeft;
-                if(timeLeft <= 10) document.getElementById('timer').style.color = 'red';
-            }
-        }, 1000);
+            deck.forEach((t, i) => {
+                const html = `<div class="tile ${t.c}" data-n="${t.n}">${t.n}</div>`;
+                if(i<11) r1.innerHTML += html; else r2.innerHTML += html;
+            });
+        }
+
+        // SortableJS Grupları
+        [document.getElementById('r1'), document.getElementById('r2'), document.getElementById('table-drop')].forEach(el => {
+            new Sortable(el, { group: 'okey', animation: 150 });
+        });
 
         window.onload = dagit;
     </script>
